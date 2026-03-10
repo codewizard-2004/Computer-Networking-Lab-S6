@@ -1,33 +1,26 @@
+// Creating an SMTP server
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 #include<unistd.h>
 
-#include<string.h>
 #include<arpa/inet.h>
 #include<sys/socket.h>
 
-
 int main(){
-	printf("SERVER: STARTING SERVER\n");
+	printf("SERVER: WAKING THE SERVER UP\n");
 	int server_socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_socket < 0){
-		perror("SERVER: FAILED TO CREATE SOCKET");
-		exit(1);
-	}
 	
-	struct sockaddr_in socket_addr;
-	socket_addr.sin_family = AF_INET;
-	socket_addr.sin_port = htons(8080);
-	socket_addr.sin_addr.s_addr = INADDR_ANY;
-	
-	if (bind(server_socket, (struct sockaddr*)&socket_addr, sizeof(socket_addr)) < 0){
-		perror("SERVER: FAILED TO BIND SOCKET TO ADDRESS");
-		exit(1);
-	}
-	
+	struct sockaddr_in server_addr;
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(8080);
+	server_addr.sin_addr.s_addr = INADDR_ANY;
+
+	bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr));
+
 	listen(server_socket, 5);
 	printf("SERVER: LISTENING AT PORT 8080\n");
-	
+
 	struct sockaddr_in client_addr;
 	socklen_t client_len = sizeof(client_addr);
 	int client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_len);
@@ -35,73 +28,61 @@ int main(){
 		perror("SERVER: FAILED TO CONNECT WITH CLIENT");
 		exit(1);
 	}
-	
-	printf("SERVER: CONNECTED WITH CLIENT");
-	
-	char welcome[] = "SMTP SERVER READY\n";
+
+	printf("SERVER: CONNECTED WITH CLIENT\n");
+	char welcome[] = "Welcome to AMAL's SMTP server. Use commanda:\n1)HELO\n2)MAIL FROM\n3)RCPT TO\n4)DATA\n5)QUIT\n\n";
 	send(client_socket, welcome, strlen(welcome), 0);
-	
+
 	FILE *fp = fopen("mail.txt", "w");
 	char ok[] = "OK\n";
-	
+
 	while(1){
-		char buffer[1024];
-		int bytes = recv(client_socket, buffer, sizeof(buffer)-1, 0);
-		buffer[bytes] = '\0';
-		
-		printf("CLIENT: %s", buffer);
-		
-		if (strncmp(buffer, "HELO", 4) == 0){
-			char msg[] = "HELLO FROM SERVER\n";
+		char command[1024];
+		int bytes = recv(client_socket, command, sizeof(command)-1, 0);
+		command[bytes] = '\0';
+		printf("CLIENT: %s", command);
+
+		if (strncmp(command, "HELO", 4) == 0){
+			char msg[] = "Hello from Amal Server....\n";
 			send(client_socket, msg, strlen(msg), 0);
 		}
-		else if(strncmp(buffer, "MAIL FROM", 9) == 0){
-			printf("%s\n", buffer);
-			fprintf(fp, "%s\n", buffer);
-			fflush(fp);
-			send(client_socket, ok, strlen(ok),0);
+		else if(strncmp(command, "MAIL FROM", 9) == 0){
+			fprintf(fp, "%s\n", command);
+			send(client_socket, ok, strlen(ok), 0);
 		}
-		else if(strncmp(buffer, "RCPT TO", 7) == 0){
-			printf("%s\n", buffer);
-			fprintf(fp, "%s\n", buffer);
-			fflush(fp);
-			send(client_socket, ok, strlen(ok),0);
+		else if (strncmp(command, "RCPT TO", 7) == 0){
+			fprintf(fp, "%s\n", command);
+			send(client_socket, ok, strlen(ok), 0);
 		}
-		else if(strncmp(buffer, "DATA", 4) == 0){
-			char reply[] = "Send text line by line. Enter . to finish\n";
-			send(client_socket, reply, strlen(reply), 0);
+		else if (strncmp(command, "DATA", 4) == 0){
+			char info[] = "Enter the data of the email.\nUse . to complete....\n";
+			send(client_socket, info, strlen(info), 0);
 			while(1){
 				char data[1024];
-				int dataBytes = recv(client_socket, data, sizeof(data)-1,0);
-				data[dataBytes] = '\0';
-				printf("%s\n", data);
-				
-				if (strcmp(data, ".\n") == 0){
-					char reply[] = "Message Accepted\n";
-					send(client_socket, reply, strlen(reply), 0);
+				int bytes = recv(client_socket, data, sizeof(data)-1, 0);
+				data[bytes] = '\0';
+				printf("DATA: %s", data);
+
+				if (strncmp(data, ".\n", 2) == 0){
+					char info[] = "Data successfully entered...\n";
+					send(client_socket, info, strlen(info), 0);
 					break;
 				}
-				fprintf(fp, "%s\n", data);
-				fflush(fp);
-			
+				fprintf(fp, "%s", data);
 			}
 		}
-		else if(strncmp(buffer, "QUIT", 4) == 0){
+		else if (strncmp(command, "QUIT", 4) == 0){
+			char quit[] = "DISCONNECTED FROM THE SERVER\n";
+			send(client_socket, quit, strlen(quit), 0);
 			fclose(fp);
-			char reply[] = "BYE BYE\n";
-			send(client_socket, reply, strlen(reply), 0);
 			break;
 		}
-		else{
-			char err[] = "Invalid Command\n";
-			send(client_socket, err, strlen(err), 0);
-		}
-		
-	
+
 	}
-	
+
+
 	close(client_socket);
 	close(server_socket);
 
-
+	return 0;
 }
