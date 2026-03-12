@@ -1,0 +1,74 @@
+============================================================
+  WORKSPACE FILE INDEX — curl quick reference
+  Usage: curl <BASE_URL>/<file_path>
+  Replace BASE_URL with your actual server address.
+============================================================
+
+ROOT FILES
+----------
+curl $BASE_URL/dvr.c
+curl $BASE_URL/leaky.c
+
+FOLDERS
+-------
+
+chat_app/
+  curl $BASE_URL/chat_app/client.c
+  curl $BASE_URL/chat_app/server.c
+
+ftp/
+  curl $BASE_URL/ftp/client.c
+  curl $BASE_URL/ftp/server.c
+  curl $BASE_URL/ftp/networking.txt
+  curl $BASE_URL/ftp/physics.txt
+  curl $BASE_URL/ftp/upload.txt
+
+min_max/
+  curl $BASE_URL/min_max/client.c
+  curl $BASE_URL/min_max/server.c
+
+prime_validator/
+  curl $BASE_URL/prime_validator/client.c
+  curl $BASE_URL/prime_validator/server.c
+
+selective/
+  curl $BASE_URL/selective/client.c
+  curl $BASE_URL/selective/server.c
+
+slidingwindow/
+  curl $BASE_URL/slidingwindow/client.c
+  curl $BASE_URL/slidingwindow/server.c
+
+smtp/
+  curl $BASE_URL/smtp/client.c
+  curl $BASE_URL/smtp/server.c
+  curl $BASE_URL/smtp/mail.txt
+
+stopnwait/
+  curl $BASE_URL/stopnwait/client.c
+  curl $BASE_URL/stopnwait/server.c
+
+tcp/
+  curl $BASE_URL/tcp/client.c
+  curl $BASE_URL/tcp/server.c
+
+udp_chat/
+  curl $BASE_URL/udp_chat/client.c
+  curl $BASE_URL/udp_chat/server.c
+
+vowels/
+  curl $BASE_URL/vowels/client.c
+  curl $BASE_URL/vowels/server.c
+
+============================================================
+TIPS
+----
+# Set your base URL once, then reuse it:
+  export BASE_URL=http://localhost:8000
+
+# Download a file instead of printing it:
+  curl -O $BASE_URL/tcp/client.c
+
+# Save with a custom name:
+  curl $BASE_URL/tcp/client.c -o my_client.c
+============================================================
